@@ -35,6 +35,7 @@ pub trait SelectEnum: Sized + 'static {
 #[derive(Default)]
 pub struct Select<T: SelectEnum> {
     title: String,
+    initial: Option<T>,
     data: PhantomData<T>,
 }
 
@@ -43,13 +44,24 @@ impl<T: SelectEnum> Select<T> {
     pub fn new(title: impl Into<String>) -> Self {
         Self {
             title: title.into(),
+            initial: None,
             data: PhantomData::<T>,
         }
     }
 
+    /// Set the initially selected variant
+    pub fn initial(mut self, initial: T) -> Self {
+        self.initial = Some(initial);
+        self
+    }
+
     /// Ask the question getting the selected enum variant as a result
     pub fn ask(&self, term: &Term) -> Result<T> {
-        let mut selected = 0;
+        let mut selected = self
+            .initial
+            .as_ref()
+            .map(|v| v.to_index())
+            .unwrap_or_default();
         loop {
             term.write_line(&format!(
                 "{} {} ({} to select)",
