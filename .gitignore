@@ -1,3 +1,5 @@
 /target
 /Cargo.lock
+quizzard_derive/target
+quizzard_derive/Cargo.lock
 /.idea
