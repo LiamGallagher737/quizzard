@@ -2,6 +2,24 @@ use crate::questions::ARROW;
 use crate::Result;
 use console::{style, Key, Term};
 
+/// Get a single enum variant input from the user
+///
+/// # Example
+/// ```no_run
+/// use console::Term;
+/// use quizzard::Text;
+///
+/// # fn main() -> Result<(), quizzard::Error> {
+/// let term = Term::stdout();
+/// // The charset allows you to only allow certain characters
+/// // The following will only allow english characters
+/// let answer = Text::new("What is your name?")
+///     .charset(('A'..='Z').chain('a'..='z'))
+///     .ask(&term)?;
+/// println!("You answered {answer}");
+/// # Ok(())
+/// # }
+/// ```
 pub struct Text {
     title: String,
     default: Option<String>,
@@ -18,16 +36,19 @@ impl Text {
         }
     }
 
+    /// Set the default value of the text value
     pub fn default(mut self, value: impl Into<String>) -> Self {
         self.default = Some(value.into());
         self
     }
 
+    /// Set what characters are allowed to be inputted
     pub fn charset(mut self, value: impl IntoIterator<Item = char>) -> Self {
         self.charset = Some(value.into_iter().collect());
         self
     }
 
+    /// Ask the question getting the inputted string as a result
     pub fn ask(&self, term: &Term) -> Result<String> {
         term.write_line(&format!(
             "{} {} ({} to proceed)",
