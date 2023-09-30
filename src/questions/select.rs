@@ -2,7 +2,6 @@ use crate::questions::ARROW;
 use crate::Error::Other;
 use crate::Result;
 use console::{style, Key, Term};
-use std::marker::PhantomData;
 
 pub trait SelectEnum: Sized + 'static {
     const VARIANTS: &'static [Self];
@@ -36,7 +35,6 @@ pub trait SelectEnum: Sized + 'static {
 pub struct Select<T: SelectEnum> {
     title: String,
     initial: Option<T>,
-    data: PhantomData<T>,
 }
 
 impl<T: SelectEnum> Select<T> {
@@ -45,7 +43,6 @@ impl<T: SelectEnum> Select<T> {
         Self {
             title: title.into(),
             initial: None,
-            data: PhantomData::<T>,
         }
     }
 
