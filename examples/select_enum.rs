@@ -1,4 +1,6 @@
-use quizzard::SelectEnum;
+use console::Term;
+use quizzard::{Select, SelectEnum};
+use std::error::Error;
 
 #[derive(SelectEnum, Debug)]
 enum Speed {
@@ -11,8 +13,14 @@ enum Speed {
     ExtremelyFast,
 }
 
-fn main() {
-    for variant in Speed::VARIANTS {
-        println!("{variant:?} => {}", variant.prompt());
-    }
+fn main() -> Result<(), Box<dyn Error>> {
+    let term = Term::stdout();
+    term.hide_cursor()?;
+
+    let answer = Select::<Speed>::new("How fast is your code?").ask(&term)?;
+
+    println!("You answered Speed::{answer:?}");
+
+    term.show_cursor()?;
+    Ok(())
 }

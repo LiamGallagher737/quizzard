@@ -1,6 +1,5 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn;
 use syn::{DataEnum, LitStr};
 
 #[proc_macro_derive(SelectEnum, attributes(prompt))]
