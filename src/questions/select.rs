@@ -35,15 +35,7 @@ impl<T: SelectEnum> Select<T> {
 
         let mut selected = 0;
         loop {
-            for (n, variant) in T::VARIANTS.iter().enumerate() {
-                let prompt = variant.prompt();
-                let arm = if n == selected {
-                    format!("{} {}", style(ARROW).red(), style(prompt).red().bold())
-                } else {
-                    format!("  {}", prompt)
-                };
-                term.write_line(&arm)?;
-            }
+            Self::write_options(term, selected)?;
             loop {
                 let key = term.read_key()?;
                 let rerender = match key {
@@ -83,5 +75,74 @@ impl<T: SelectEnum> Select<T> {
                 }
             }
         }
+    }
+
+    pub fn ask_opt(&self, term: &Term) -> Result<Option<T>> {
+        term.write_line(&format!(
+            "{} {} ({} to select, {} to skip)",
+            style('?').green(),
+            style(&self.title).bold(),
+            style("<space>").red(),
+            style("<enter>").red(),
+        ))?;
+
+        let mut selected = 0;
+        loop {
+            Self::write_options(term, selected)?;
+            loop {
+                let key = term.read_key()?;
+                let rerender = match key {
+                    Key::Char(' ') => {
+                        term.clear_last_lines(T::VARIANTS.len() + 1)?;
+                        let ans = T::from_index(selected).ok_or(Other("Index out of range"))?;
+                        term.write_line(&format!(
+                            "{} {} {}",
+                            style('?').green(),
+                            style(&self.title).bold(),
+                            style(ans.prompt()).dim(),
+                        ))?;
+                        return Ok(Some(ans));
+                    }
+                    Key::Enter => {
+                        return Ok(None);
+                    }
+                    Key::ArrowUp => {
+                        if selected > 0 {
+                            selected -= 1
+                        } else {
+                            selected = T::VARIANTS.len() - 1
+                        };
+                        true
+                    }
+                    Key::ArrowDown => {
+                        if selected < T::VARIANTS.len() - 1 {
+                            selected += 1
+                        } else {
+                            selected = 0
+                        };
+                        true
+                    }
+                    _ => false,
+                };
+
+                if rerender {
+                    term.clear_last_lines(T::VARIANTS.len())?;
+                    break;
+                }
+            }
+        }
+    }
+
+    fn write_options(term: &Term, selected: usize) -> Result<()> {
+        for (n, variant) in T::VARIANTS.iter().enumerate() {
+            let prompt = variant.prompt();
+            let arm = if n == selected {
+                format!("{} {}", style(ARROW).red(), style(prompt).red().bold())
+            } else {
+                format!("  {}", prompt)
+            };
+            term.write_line(&arm)?;
+        }
+        Ok(())
     }
 }

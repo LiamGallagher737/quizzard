@@ -18,8 +18,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     term.hide_cursor()?;
 
     let answer = Select::<Speed>::new("How fast is your code?").ask(&term)?;
-
     println!("You answered Speed::{answer:?}");
+
+    let answer = Select::<Speed>::new("How fast is your code? (optional)").ask_opt(&term)?;
+    println!("You optionally answered {answer:?}");
 
     term.show_cursor()?;
     Ok(())
