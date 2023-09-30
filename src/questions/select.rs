@@ -26,16 +26,17 @@ impl<T: SelectEnum> Select<T> {
     }
 
     pub fn ask(&self, term: &Term) -> Result<T> {
-        term.write_line(&format!(
-            "{} {} ({} to select)",
-            style('?').green(),
-            style(&self.title).bold(),
-            style("<enter>").red(),
-        ))?;
-
         let mut selected = 0;
         loop {
+            term.write_line(&format!(
+                "{} {} ({} to select)",
+                style('?').green(),
+                style(&self.title).bold(),
+                style("<enter>").red(),
+            ))?;
+
             Self::write_options(term, selected)?;
+
             loop {
                 let key = term.read_key()?;
                 let rerender = match key {
@@ -70,7 +71,9 @@ impl<T: SelectEnum> Select<T> {
                 };
 
                 if rerender {
-                    term.clear_last_lines(T::VARIANTS.len())?;
+                    let (_width, height) = term.size();
+                    let per_page = height as usize - 2;
+                    term.clear_last_lines(T::VARIANTS.len().min(per_page))?;
                     break;
                 }
             }
@@ -78,17 +81,18 @@ impl<T: SelectEnum> Select<T> {
     }
 
     pub fn ask_opt(&self, term: &Term) -> Result<Option<T>> {
-        term.write_line(&format!(
-            "{} {} ({} to select, {} to skip)",
-            style('?').green(),
-            style(&self.title).bold(),
-            style("<space>").red(),
-            style("<enter>").red(),
-        ))?;
-
         let mut selected = 0;
         loop {
+            term.write_line(&format!(
+                "{} {} ({} to select, {} to skip)",
+                style('?').green(),
+                style(&self.title).bold(),
+                style("<space>").red(),
+                style("<enter>").red(),
+            ))?;
+
             Self::write_options(term, selected)?;
+
             loop {
                 let key = term.read_key()?;
                 let rerender = match key {
@@ -104,6 +108,13 @@ impl<T: SelectEnum> Select<T> {
                         return Ok(Some(ans));
                     }
                     Key::Enter => {
+                        term.clear_last_lines(T::VARIANTS.len() + 1)?;
+                        term.write_line(&format!(
+                            "{} {} {}",
+                            style('?').green(),
+                            style(&self.title).bold(),
+                            style("Skipped").dim(),
+                        ))?;
                         return Ok(None);
                     }
                     Key::ArrowUp => {
@@ -126,7 +137,9 @@ impl<T: SelectEnum> Select<T> {
                 };
 
                 if rerender {
-                    term.clear_last_lines(T::VARIANTS.len())?;
+                    let (_width, height) = term.size();
+                    let per_page = height as usize - 2;
+                    term.clear_last_lines(T::VARIANTS.len().min(per_page))?;
                     break;
                 }
             }
@@ -134,7 +147,18 @@ impl<T: SelectEnum> Select<T> {
     }
 
     fn write_options(term: &Term, selected: usize) -> Result<()> {
-        for (n, variant) in T::VARIANTS.iter().enumerate() {
+        let (rows, _) = term.size();
+        let per_page = rows as usize - 2;
+
+        let page = page(term, selected);
+        let start = page * per_page;
+        let end = start + per_page;
+
+        for (n, variant) in T::VARIANTS.iter().enumerate().skip(start).take(per_page) {
+            if n >= end {
+                break;
+            }
+
             let prompt = variant.prompt();
             let arm = if n == selected {
                 format!("{} {}", style(ARROW).red(), style(prompt).red().bold())
@@ -145,4 +169,10 @@ impl<T: SelectEnum> Select<T> {
         }
         Ok(())
     }
+}
+
+fn page(term: &Term, selected: usize) -> usize {
+    let (rows, _) = term.size();
+    let per_page = rows as usize - 2;
+    selected / per_page
 }
