@@ -89,6 +89,13 @@ impl Text {
                     }
                     Key::Enter => {
                         term.clear_line()?;
+                        term.clear_last_lines(1)?;
+                        term.write_line(&format!(
+                            "{} {} {}",
+                            style('?').green(),
+                            style(&self.title).bold(),
+                            style(input.clone()).dim(),
+                        ))?;
                         return Ok(input);
                     }
 
