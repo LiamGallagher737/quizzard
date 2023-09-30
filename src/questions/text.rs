@@ -22,6 +22,7 @@ impl Text {
         self.default = Some(value.into());
         self
     }
+
     pub fn charset(mut self, value: impl IntoIterator<Item = char>) -> Self {
         self.charset = Some(value.into_iter().collect());
         self
@@ -35,8 +36,8 @@ impl Text {
             style("<enter>").red(),
         ))?;
 
-        let mut cursor = 0;
-        let mut input = String::new();
+        let mut input = self.default.clone().unwrap_or_default();
+        let mut cursor = input.len();
 
         loop {
             term.write_str(&format!(

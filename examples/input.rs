@@ -8,5 +8,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let answer = Text::new("What's your name?").ask(&term)?;
     println!("You answered {answer:?}");
 
+    let answer = Text::new("What's your job?")
+        .default("Developer")
+        .ask(&term)?;
+    println!("You answered {answer:?}");
+
     Ok(())
 }
