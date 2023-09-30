@@ -96,7 +96,7 @@ impl<T: SelectEnum> Select<T> {
                 if rerender {
                     let (_width, height) = term.size();
                     let per_page = height as usize - 2;
-                    term.clear_last_lines(T::VARIANTS.len().min(per_page))?;
+                    term.clear_last_lines((T::VARIANTS.len() + 1).min(per_page))?;
                     break;
                 }
             }
@@ -163,7 +163,7 @@ impl<T: SelectEnum> Select<T> {
                 if rerender {
                     let (_width, height) = term.size();
                     let per_page = height as usize - 2;
-                    term.clear_last_lines(T::VARIANTS.len().min(per_page))?;
+                    term.clear_last_lines((T::VARIANTS.len() + 1).min(per_page))?;
                     break;
                 }
             }
