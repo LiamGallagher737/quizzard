@@ -54,11 +54,15 @@ fn as_str_match_arms(data: &DataEnum) -> Vec<proc_macro2::TokenStream> {
             let name = &v.ident;
             let attr = v.attrs.iter().find(|a| a.path().is_ident("prompt"));
             let prompt = attr.map(|a| a.parse_args::<LitStr>().expect("Expected string literal"));
-            let prompt = prompt
-                .map(|p| format!("{}", p.token()))
-                .unwrap_or_else(|| format!("{}", name));
-            quote! {
-                Self::#name => #prompt
+            if let Some(prompt) = prompt {
+                quote! {
+                    Self::#name => #prompt
+                }
+            } else {
+                let prompt = format!("{}", name);
+                quote! {
+                    Self::#name => #prompt
+                }
             }
         })
         .collect()
