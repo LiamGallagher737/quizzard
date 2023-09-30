@@ -1,10 +1,10 @@
+pub use input::*;
 pub use select::*;
-pub use text::*;
 
 use console::style;
 
+mod input;
 mod select;
-mod text;
 
 const ARROW: char = '❯';
 

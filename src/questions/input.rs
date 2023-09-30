@@ -1,38 +1,52 @@
 use crate::questions::{formatted_answered_question, formatted_question, ARROW};
 use crate::Result;
 use console::{style, Key, Term};
+use std::marker::PhantomData;
+use std::result;
+
+pub struct NoValidator;
+pub struct Validator<T> {
+    method: Box<ValidatorFunc<T>>,
+}
+
+type ValidatorFunc<T> = dyn Fn(String) -> result::Result<T, String>;
 
 /// Get a single enum variant input from the user
 ///
 /// # Example
 /// ```no_run
 /// use console::Term;
-/// use quizzard::Text;
+/// use quizzard::Input;
 ///
 /// # fn main() -> Result<(), quizzard::Error> {
 /// let term = Term::stdout();
 /// // The charset allows you to only allow certain characters
 /// // The following will only allow english characters
-/// let answer = Text::new("What is your name?")
+/// let answer = Input::new("What is your name?")
 ///     .charset(('A'..='Z').chain('a'..='z'))
+///     .validator(|input| Ok(input))
 ///     .ask(&term)?;
 /// println!("You answered {answer}");
 /// # Ok(())
 /// # }
 /// ```
-pub struct Text {
+pub struct Input<T, Validator = NoValidator> {
     title: String,
     default: Option<String>,
     charset: Option<Vec<char>>,
+    validator: Validator,
+    data: PhantomData<T>,
 }
 
-impl Text {
+impl<T> Input<T, NoValidator> {
     /// Creates an input with the given title
     pub fn new(title: impl Into<String>) -> Self {
         Self {
             title: title.into(),
             default: None,
             charset: None,
+            validator: NoValidator,
+            data: PhantomData::<T>,
         }
     }
 
@@ -48,8 +62,26 @@ impl Text {
         self
     }
 
+    pub fn validator(
+        self,
+        value: impl Fn(String) -> result::Result<T, String> + 'static,
+    ) -> Input<T, Validator<T>> {
+        let validator = Validator::<T> {
+            method: Box::new(value),
+        };
+        Input::<T, Validator<T>> {
+            title: self.title,
+            default: self.default,
+            charset: self.charset,
+            validator,
+            data: Default::default(),
+        }
+    }
+}
+
+impl<T> Input<T, Validator<T>> {
     /// Ask the question getting the inputted string as a result
-    pub fn ask(&self, term: &Term) -> Result<String> {
+    pub fn ask(&self, term: &Term) -> Result<T> {
         term.write_line(&formatted_question(
             self.title.clone(),
             &[("enter", "proceed")],
@@ -57,6 +89,7 @@ impl Text {
 
         let mut input = self.default.clone().unwrap_or_default();
         let mut cursor = input.len();
+        let mut active_err_msg = false;
 
         loop {
             term.write_str(&format!(
@@ -107,13 +140,31 @@ impl Text {
                         false
                     }
                     Key::Enter => {
-                        term.clear_line()?;
-                        term.clear_last_lines(1)?;
-                        term.write_line(&formatted_answered_question(
-                            self.title.clone(),
-                            input.clone(),
-                        ))?;
-                        return Ok(input);
+                        let validated_input = (self.validator.method)(input.clone());
+                        match validated_input {
+                            Ok(ans) => {
+                                term.clear_line()?;
+                                term.clear_last_lines(if !active_err_msg { 1 } else { 2 })?;
+                                term.write_line(&formatted_answered_question(
+                                    self.title.clone(),
+                                    input.clone(),
+                                ))?;
+                                return Ok(ans);
+                            }
+                            Err(msg) => {
+                                term.clear_line()?;
+                                if active_err_msg {
+                                    term.clear_last_lines(1)?;
+                                }
+                                term.write_line(&format!(
+                                    "{} {}",
+                                    style('X').red(),
+                                    style(msg).red()
+                                ))?;
+                                active_err_msg = true;
+                                break;
+                            }
+                        }
                     }
 
                     _ => false,
