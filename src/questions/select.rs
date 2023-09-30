@@ -1,4 +1,4 @@
-use crate::questions::ARROW;
+use super::{formatted_answered_question, formatted_question, ARROW};
 use crate::Error::Other;
 use crate::Result;
 use console::{style, Key, Term};
@@ -60,11 +60,9 @@ impl<T: SelectEnum> Select<T> {
             .map(|v| v.to_index())
             .unwrap_or_default();
         loop {
-            term.write_line(&format!(
-                "{} {} ({} to select)",
-                style('?').green(),
-                style(&self.title).bold(),
-                style("<enter>").red(),
+            term.write_line(&formatted_question(
+                self.title.clone(),
+                &[("enter", "select")],
             ))?;
 
             Self::write_options(term, selected)?;
@@ -75,11 +73,9 @@ impl<T: SelectEnum> Select<T> {
                     Key::Enter => {
                         term.clear_last_lines(T::VARIANTS.len() + 1)?;
                         let ans = T::from_index(selected).ok_or(Other("Index out of range"))?;
-                        term.write_line(&format!(
-                            "{} {} {}",
-                            style('?').green(),
-                            style(&self.title).bold(),
-                            style(ans.prompt()).dim(),
+                        term.write_line(&formatted_answered_question(
+                            self.title.clone(),
+                            ans.prompt().to_string(),
                         ))?;
                         return Ok(ans);
                     }
@@ -125,12 +121,9 @@ impl<T: SelectEnum> Select<T> {
     pub fn ask_opt(&self, term: &Term) -> Result<Option<T>> {
         let mut selected = 0;
         loop {
-            term.write_line(&format!(
-                "{} {} ({} to select, {} to skip)",
-                style('?').green(),
-                style(&self.title).bold(),
-                style("<space>").red(),
-                style("<enter>").red(),
+            term.write_line(&formatted_question(
+                self.title.clone(),
+                &[("space", "select"), ("enter", "skip")],
             ))?;
 
             Self::write_options(term, selected)?;
@@ -141,21 +134,17 @@ impl<T: SelectEnum> Select<T> {
                     Key::Char(' ') => {
                         term.clear_last_lines(T::VARIANTS.len() + 1)?;
                         let ans = T::from_index(selected).ok_or(Other("Index out of range"))?;
-                        term.write_line(&format!(
-                            "{} {} {}",
-                            style('?').green(),
-                            style(&self.title).bold(),
-                            style(ans.prompt()).dim(),
+                        term.write_line(&formatted_answered_question(
+                            self.title.clone(),
+                            ans.prompt().to_string(),
                         ))?;
                         return Ok(Some(ans));
                     }
                     Key::Enter => {
                         term.clear_last_lines(T::VARIANTS.len() + 1)?;
-                        term.write_line(&format!(
-                            "{} {} {}",
-                            style('?').green(),
-                            style(&self.title).bold(),
-                            style("Skipped").dim(),
+                        term.write_line(&formatted_answered_question(
+                            self.title.clone(),
+                            String::from("Skipped"),
                         ))?;
                         return Ok(None);
                     }

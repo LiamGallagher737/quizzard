@@ -1,4 +1,4 @@
-use crate::questions::ARROW;
+use crate::questions::{formatted_answered_question, formatted_question, ARROW};
 use crate::Result;
 use console::{style, Key, Term};
 
@@ -50,11 +50,9 @@ impl Text {
 
     /// Ask the question getting the inputted string as a result
     pub fn ask(&self, term: &Term) -> Result<String> {
-        term.write_line(&format!(
-            "{} {} ({} to proceed)",
-            style('?').green(),
-            style(&self.title).bold(),
-            style("<enter>").red(),
+        term.write_line(&formatted_question(
+            self.title.clone(),
+            &[("enter", "proceed")],
         ))?;
 
         let mut input = self.default.clone().unwrap_or_default();
@@ -111,11 +109,9 @@ impl Text {
                     Key::Enter => {
                         term.clear_line()?;
                         term.clear_last_lines(1)?;
-                        term.write_line(&format!(
-                            "{} {} {}",
-                            style('?').green(),
-                            style(&self.title).bold(),
-                            style(input.clone()).dim(),
+                        term.write_line(&formatted_answered_question(
+                            self.title.clone(),
+                            input.clone(),
                         ))?;
                         return Ok(input);
                     }
