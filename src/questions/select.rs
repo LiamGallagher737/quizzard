@@ -102,6 +102,15 @@ impl<T: SelectEnum> Select<T> {
                         };
                         true
                     }
+                    Key::Char(c @ '1'..='9') => {
+                        let index = c.to_digit(10).unwrap() as usize - 1;
+                        if index < T::VARIANTS.len() {
+                            selected = index;
+                            true
+                        } else {
+                            false
+                        }
+                    }
                     _ => false,
                 };
 
