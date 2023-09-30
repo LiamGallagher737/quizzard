@@ -11,6 +11,27 @@ pub trait SelectEnum: Sized + 'static {
     fn from_index(n: usize) -> Option<Self>;
 }
 
+/// Get a single enum variant input from the user
+///
+/// # Example
+/// ```no_run
+/// use console::Term;
+/// use quizzard::{Select, SelectEnum};
+///
+/// #[derive(SelectEnum, Debug)]
+/// enum Speed {
+///     Slow,
+///     Medium,
+///     Fast,
+/// }
+///
+/// # fn main() -> Result<(), quizzard::Error> {
+/// let term = Term::stdout();
+/// let answer = Select::<Speed>::new("How fast is your code?").ask(&term)?;
+/// println!("You answered Speed::{answer:?}");
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Default)]
 pub struct Select<T: SelectEnum> {
     title: String,
@@ -18,6 +39,7 @@ pub struct Select<T: SelectEnum> {
 }
 
 impl<T: SelectEnum> Select<T> {
+    /// Creates a select with the given title
     pub fn new(title: impl Into<String>) -> Self {
         Self {
             title: title.into(),
@@ -25,6 +47,7 @@ impl<T: SelectEnum> Select<T> {
         }
     }
 
+    /// Ask the question getting the selected enum variant as a result
     pub fn ask(&self, term: &Term) -> Result<T> {
         let mut selected = 0;
         loop {
@@ -80,6 +103,7 @@ impl<T: SelectEnum> Select<T> {
         }
     }
 
+    /// Ask the question optionally getting either the selected enum variant or none as a result
     pub fn ask_opt(&self, term: &Term) -> Result<Option<T>> {
         let mut selected = 0;
         loop {
