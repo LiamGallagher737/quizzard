@@ -15,8 +15,6 @@ use std::str::FromStr;
 ///
 /// # fn main() -> Result<(), quizzard::Error> {
 /// let term = Term::stdout();
-/// // The charset allows you to only allow certain characters
-/// // The following will only allow english characters
 /// let answer = Integer::<u8>::new("How old are you?")
 ///     .max(120)
 ///     .ask(&term)?;
