@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 console = "0.15.7"
+num-traits = "0.2.16"
 quizzard_derive = { path = "./quizzard_derive" }
 thiserror = "1.0.49"

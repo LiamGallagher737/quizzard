@@ -1,9 +1,11 @@
 pub use input::*;
+pub use integer::*;
 pub use select::*;
 
 use console::style;
 
 mod input;
+mod integer;
 mod select;
 
 const ARROW: char = '❯';
