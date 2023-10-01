@@ -6,6 +6,24 @@ use std::num::{IntErrorKind, ParseIntError};
 use std::result;
 use std::str::FromStr;
 
+/// Get an integer input from the user
+///
+/// # Example
+/// ```no_run
+/// use console::Term;
+/// use quizzard::Integer;
+///
+/// # fn main() -> Result<(), quizzard::Error> {
+/// let term = Term::stdout();
+/// // The charset allows you to only allow certain characters
+/// // The following will only allow english characters
+/// let answer = Integer::<u8>::new("How old are you?")
+///     .max(120)
+///     .ask(&term)?;
+/// println!("You're {answer} years old");
+/// # Ok(())
+/// # }
+/// ```
 pub struct Integer<T: FromStr + Bounded + Zero + PartialOrd + Display + Copy + 'static>
 where
     T::Err: IntError,
@@ -19,6 +37,7 @@ impl<T: FromStr + Bounded + Zero + PartialOrd + Display + Copy + 'static> Intege
 where
     T::Err: IntError,
 {
+    /// Creates an integer input with the given title
     pub fn new(title: impl Into<String>) -> Self {
         Self {
             title: title.into(),
@@ -27,16 +46,19 @@ where
         }
     }
 
+    /// Sets the min value accepted by the input
     pub fn min(mut self, min: T) -> Self {
         self.min = min;
         self
     }
 
+    /// Sets the max value accepted by the input
     pub fn max(mut self, max: T) -> Self {
         self.max = max;
         self
     }
 
+    /// Ask the question getting the inputted integer as a result
     pub fn ask(&self, term: &Term) -> Result<T> {
         let min = self.min;
         let max = self.max;
