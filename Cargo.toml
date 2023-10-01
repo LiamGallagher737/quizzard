@@ -10,3 +10,7 @@ console = "0.15.7"
 num-traits = "0.2.16"
 quizzard_derive = { path = "./quizzard_derive" }
 thiserror = "1.0.49"
+email_address = { version = "0.2.4", default-features = false, optional = true }
+
+[features]
+email = ["dep:email_address"]
