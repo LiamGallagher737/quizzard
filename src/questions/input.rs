@@ -62,6 +62,7 @@ impl<T> Input<T, NoValidator> {
         self
     }
 
+    /// Set the function for validating and returning the parsed type
     pub fn validator(
         self,
         value: impl Fn(String) -> result::Result<T, String> + 'static,
@@ -80,7 +81,7 @@ impl<T> Input<T, NoValidator> {
 }
 
 impl<T> Input<T, Validator<T>> {
-    /// Ask the question getting the inputted string as a result
+    /// Ask the question getting the validated type as a result
     pub fn ask(&self, term: &Term) -> Result<T> {
         term.write_line(&formatted_question(
             self.title.clone(),
