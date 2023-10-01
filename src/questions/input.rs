@@ -50,18 +50,6 @@ impl<T> Input<T, NoValidator> {
         }
     }
 
-    /// Set the default value of the text value
-    pub fn default(mut self, value: impl Into<String>) -> Self {
-        self.default = Some(value.into());
-        self
-    }
-
-    /// Set what characters are allowed to be inputted
-    pub fn charset(mut self, value: impl IntoIterator<Item = char>) -> Self {
-        self.charset = Some(value.into_iter().collect());
-        self
-    }
-
     /// Set the function for validating and returning the parsed type
     pub fn validator(
         self,
@@ -177,5 +165,19 @@ impl<T> Input<T, Validator<T>> {
                 }
             }
         }
+    }
+}
+
+impl<T, Validator> Input<T, Validator> {
+    /// Set the default value of the text value
+    pub fn default(mut self, value: impl Into<String>) -> Self {
+        self.default = Some(value.into());
+        self
+    }
+
+    /// Set what characters are allowed to be inputted
+    pub fn charset(mut self, value: impl IntoIterator<Item = char>) -> Self {
+        self.charset = Some(value.into_iter().collect());
+        self
     }
 }
