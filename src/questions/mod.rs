@@ -1,9 +1,13 @@
+#[cfg(feature = "email")]
+pub use email::*;
 pub use input::*;
 pub use integer::*;
 pub use select::*;
 
 use console::style;
 
+#[cfg(feature = "email")]
+mod email;
 mod input;
 mod integer;
 mod select;
