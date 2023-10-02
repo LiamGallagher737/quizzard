@@ -3,6 +3,27 @@ use crate::Result;
 use crate::SelectEnum;
 use console::{style, Key, Term};
 
+/// Get multiple enum variants input from the user
+///
+/// # Example
+/// ```no_run
+/// use console::Term;
+/// use quizzard::{MultiSelect, SelectEnum};
+///
+/// #[derive(SelectEnum, Debug)]
+/// enum Language {
+///     Rust,
+///     Go,
+///     C,
+/// }
+///
+/// # fn main() -> Result<(), quizzard::Error> {
+/// let term = Term::stdout();
+/// let answers = MultiSelect::<Language>::new("What languages do you use?").ask(&term)?;
+/// println!("You selected {answers:?}");
+/// # Ok(())
+/// # }
+/// ```
 pub struct MultiSelect<T: SelectEnum> {
     title: String,
     initial: Vec<T>,
