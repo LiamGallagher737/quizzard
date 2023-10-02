@@ -2,6 +2,7 @@
 pub use email::*;
 pub use input::*;
 pub use integer::*;
+pub use multiselect::*;
 pub use select::*;
 
 use console::style;
@@ -10,9 +11,12 @@ use console::style;
 mod email;
 mod input;
 mod integer;
+mod multiselect;
 mod select;
 
 const ARROW: char = '❯';
+const FILLED_DOT: char = '◉';
+const OUTLINE_DOT: char = '◯';
 
 fn formatted_question(title: String, actions: &[(&str, &str)]) -> String {
     format!(
